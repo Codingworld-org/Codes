@@ -1,43 +1,32 @@
-#define pirPin 2
-int buzzer = 4;
-int calibrationTime = 30;
-long unsigned int lowIn;
-long unsigned int pause = 5000;
-boolean lockLow = true;
-boolean takeLowTime;
-int PIRValue = 0;
+int buzzer = 4;                // the pin that the buzzer is atteched to
+int sensor = 2;              // the pin that the sensor is atteched to
+int state = LOW;             // by default, no motion detected
+int val = 0;                 // variable to store the sensor status (value)
 
 void setup() {
-  pinMode(buzzer, OUTPUT);
-   Serial.begin(9600);
-   pinMode(pirPin, INPUT);
+  pinMode(buzzer, OUTPUT);      // initalize buzzer as an output
+  pinMode(sensor, INPUT);    // initialize sensor as an input
+  Serial.begin(9600);        // initialize serial
 }
 
-void loop() {
-   PIRSensor();
-}
-
-void PIRSensor() {
-   if(digitalRead(pirPin) == HIGH) {
-      if(lockLow) {
-         PIRValue = 1;
-         lockLow = false;
-         Serial.println("Motion detected.");
-         digitalWrite(buzzer,HIGH);
-         delay(50);
-      }
-      takeLowTime = true;
-   }
-   if(digitalRead(pirPin) == LOW) {
-      if(takeLowTime){
-         lowIn = millis();takeLowTime = false;
-      }
-      if(!lockLow && millis() - lowIn > pause) {
-         PIRValue = 0;
-         lockLow = true;
-         Serial.println("Motion ended.");
-         digitalWrite(buzzer, LOW);
-         delay(50);
-      }
-   }
+void loop(){
+  val = digitalRead(sensor);   // read sensor value
+  if (val == HIGH) {           // check if the sensor is HIGH
+    digitalWrite(buzzer, HIGH);   // turn buzzer ON
+    delay(100);                // delay 100 milliseconds 
+    
+    if (state == LOW) {
+      Serial.println("Motion detected!"); 
+      state = HIGH;       // update variable state to HIGH
+    }
+  } 
+  else {
+      digitalWrite(buzzer, LOW); // turn buzzer OFF
+      delay(200);             // delay 200 milliseconds 
+      
+      if (state == HIGH){
+        Serial.println("Motion stopped!");
+        state = LOW;       // update variable state to LOW
+    }
+  }
 }
